@@ -3,7 +3,7 @@
 Analytics C2 producer — pontualidade (on-time performance).
 
 Consumes a C1 raw flight dataset (C1 v1.0.0) and produces the C2 punctuality
-indicator (C2 v1.0.0), grouped by (directional route x airline x reference month).
+indicator (C2 v1.1.0), grouped by (directional route x airline x reference month).
 
 Source of truth for the numbers this script encodes:
   - docs/ecosystem/contracts.md            -> C1 v1.0.0 (input) / C2 v1.0.0 (output)
@@ -21,10 +21,10 @@ from datetime import datetime, timedelta, timezone
 
 # --- Frozen constants encoded from the contracts (single source of truth) ----
 
-ANALYTICS_VERSION = "1.0.0"            # semver of this Analytics logic (determinism)
+ANALYTICS_VERSION = "1.1.0"            # semver of this Analytics logic (determinism)
 C1_CONTRACT_VERSION = "v1.0.0"
 METRIC_ID = "pontualidade"
-METRIC_VERSION = "v1.0.0"
+METRIC_VERSION = "v1.1.0"
 METRIC_DEFINITION_SOURCE = "docs/product/metrics-definitions.md#pontualidade"
 ON_TIME_BASIS = "arrival"             # punctuality measured at arrival to destination
 ON_TIME_THRESHOLD_MINUTES = 15        # <= 15 min inclusive; early counts as on-time
@@ -105,7 +105,7 @@ class Group:
         "airline_icao", "airline_name", "reference_month",
         "flights_operated", "flights_on_time",
         "flights_cancelled", "flights_not_reported",
-        "flights_operated_missing_arrival",
+        "flights_operated_missing_arrival", "flights_operated_missing_schedule",
         "rows_seen", "lineage", "source_year_months",
     )
 
@@ -122,6 +122,7 @@ class Group:
         self.flights_cancelled = 0
         self.flights_not_reported = 0
         self.flights_operated_missing_arrival = 0
+        self.flights_operated_missing_schedule = 0
         self.rows_seen = 0
         self.lineage = {}            # (source_file, file_sha256, source_year_month) -> None (dedupe)
         self.source_year_months = set()
@@ -146,16 +147,21 @@ class Group:
         scheduled_arrival = parse_ts(row.get("scheduled_arrival"))
 
         if status == STATUS_REALIZADO:
-            if actual_arrival is not None:
-                # Denominator: REALIZADO with an actual arrival recorded.
+            if actual_arrival is None:
+                # Missing arrival: punctuality unmeasurable. Reported, not judged.
+                self.flights_operated_missing_arrival += 1
+            elif scheduled_arrival is None:
+                # Missing schedule: pontual(v) = (actual - scheduled) <= 15min is
+                # UNDEFINED without scheduled_arrival. Keeping such a row in the
+                # denominator would silently classify it as late -- inventing a fact
+                # the source does not support. Excluded and reported instead.
+                self.flights_operated_missing_schedule += 1
+            else:
+                # Denominator: REALIZADO with both arrival timestamps present.
                 self.flights_operated += 1
                 # Numerator: subset with (actual - scheduled) <= 15 min (early counts).
-                # If scheduled_arrival is missing we cannot prove punctuality -> not on-time.
-                if scheduled_arrival is not None:
-                    if (actual_arrival - scheduled_arrival) <= ON_TIME_THRESHOLD:
-                        self.flights_on_time += 1
-            else:
-                self.flights_operated_missing_arrival += 1
+                if (actual_arrival - scheduled_arrival) <= ON_TIME_THRESHOLD:
+                    self.flights_on_time += 1
         elif status == STATUS_CANCELADO:
             self.flights_cancelled += 1
         elif status == STATUS_NAO_INFORMADO:
@@ -176,6 +182,7 @@ class Group:
         source_total = (
             operated
             + self.flights_operated_missing_arrival
+            + self.flights_operated_missing_schedule
             + self.flights_cancelled
             + self.flights_not_reported
         )
@@ -218,6 +225,7 @@ class Group:
             "flights_cancelled": self.flights_cancelled,
             "flights_not_reported": self.flights_not_reported,
             "flights_operated_missing_arrival": self.flights_operated_missing_arrival,
+            "flights_operated_missing_schedule": self.flights_operated_missing_schedule,
             "flights_source_total": source_total,
             # --- Metric provenance ---
             "metric_id": METRIC_ID,
