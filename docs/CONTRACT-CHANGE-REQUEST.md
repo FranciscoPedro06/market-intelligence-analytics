@@ -1,11 +1,16 @@
 # Solicitação de emenda de contrato — C2 `v1.0.0` → `v1.1.0`
 
+> **Status:** ✅ **APLICADA** — aprovada e aplicada pelo Sprint Lead em **2026-07-25**.
+> `C2 v1.1.0` e `pontualidade v1.1.0` estão vigentes em `Market-Intelligence-Ecosystem`
+> (`docs/ecosystem/contracts.md`, `docs/product/metrics-definitions.md`).
 > **Origem:** Analytics Engineer, Sprint 1 / Fase 2 (integração com o C1 real).
 > **Destinatário:** Sprint Lead (guardião dos contratos).
-> **Status:** ⏳ aguardando aplicação em `Market-Intelligence-Ecosystem`.
 > **Motivo:** contratos são do ecossistema — nenhum repositório emenda sozinho um contrato
-> que compartilha. O Analytics **já implementa** o comportamento abaixo (`analytics_version 1.1.0`);
-> falta apenas refletir nos documentos de governança.
+> que compartilha. O Analytics implementou o comportamento (`analytics_version 1.1.0`) e
+> solicitou a emenda; a governança foi atualizada em seguida.
+>
+> Documento mantido como **registro histórico** da decisão (rastreabilidade: por que o
+> denominador mudou entre `v1.0.0` e `v1.1.0`). Não requer mais nenhuma ação.
 
 ## 1. O achado
 
@@ -29,7 +34,7 @@ Isso colide com a garantia “**Nulos nunca inventados**” (contracts.md) e com
 Efeito observado: **ACN publicava `on_time_rate = 0.0000`** (“0% pontual”) em todos os seus
 6 grupos, com 21 de seus 22 voos indefinidos; AZU `SBSP-SBRJ` subestimada em até **2,09 pp**.
 
-## 2. Emenda proposta
+## 2. Emenda aplicada
 
 Simétrica ao tratamento **já existente** para o caso espelho (`flights_operated_missing_arrival`).
 

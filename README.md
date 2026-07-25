@@ -24,10 +24,12 @@ Uma métrica (**pontualidade**), arquivos planos. Sem banco, framework ou orques
   (inclusivo; antecipado = pontual). Base = chegada. Denominador = `REALIZADO` com
   `actual_arrival` **e** `scheduled_arrival` não nulos.
 
-> ⚠️ **C2 `v1.1.0` / pontualidade `v1.1.0` aguardam ratificação do Sprint Lead.**
-> A mudança é aditiva (um contador novo) e nasceu do C1 real: sem `scheduled_arrival` a
-> pontualidade é *indefinida*, e mantê-la no denominador contava o voo como atrasado —
-> inventando um fato. Ver [`docs/CONTRACT-CHANGE-REQUEST.md`](docs/CONTRACT-CHANGE-REQUEST.md).
+> ✅ **C2 `v1.1.0` e pontualidade `v1.1.0` ratificados pelo Sprint Lead em 2026-07-25**
+> e vigentes em `docs/ecosystem/contracts.md` e `docs/product/metrics-definitions.md`.
+> A emenda — aditiva, nascida do C1 real — introduziu `flights_operated_missing_schedule`:
+> sem `scheduled_arrival` a pontualidade é *indefinida*, e mantê-la no denominador contava o
+> voo como atrasado, inventando um fato. Histórico em
+> [`docs/CONTRACT-CHANGE-REQUEST.md`](docs/CONTRACT-CHANGE-REQUEST.md).
 
 Contratos, princípios e governança:
 https://github.com/FranciscoPedro06/Market-Intelligence-Ecosystem
