@@ -16,13 +16,24 @@ Uma métrica (**pontualidade**), arquivos planos. Sem banco, framework ou orques
 - **Entrada — C1 `v1.0.0`**: registro bruto de voo (CSV). Colunas de origem VRA + colunas
   de proveniência (`source_file`, `file_sha256`, `source_year_month`, …). Camada bruta:
   valores como publicados, sem re-mapeamento semântico.
-- **Saída — C2 `v1.1.0`**: `output/c2_punctuality.json`, array de registros, um por
+- **Saída — C2 `v1.2.0`**: `output/c2_punctuality.json`, documento com **envelope**
+  `{contract, contract_version, records[]}`; um registro por
   **(`route_id` direcional × `airline_icao` × `reference_month`)**. Cada registro carrega
   dimensões (incl. `route_pair_id` não-direcional e IATA derivado), medidas, proveniência
   da métrica e linhagem C1.
+
+  ```json
+  { "contract": "C2", "contract_version": "v1.2.0", "records": [ { "route_id": "SBSP-SBRJ", "…": "…" } ] }
+  ```
 - **Métrica — pontualidade `v1.1.0`**: pontual ⟺ (`actual_arrival − scheduled_arrival`) ≤ 15 min
   (inclusivo; antecipado = pontual). Base = chegada. Denominador = `REALIZADO` com
   `actual_arrival` **e** `scheduled_arrival` não nulos.
+
+> ✅ **C2 `v1.2.0` ratificado pelo Sprint Lead em 2026-08-31 (ADR-0002 / GOV-003).**
+> Bump aditivo **de documento**: o esquema do registro é o mesmo do `v1.1.0`; o que muda é o
+> envelope, que faz o artefato declarar qual contrato e qual versão carrega. Antes disso a API
+> não conseguia confirmar a versão do que consumia. `analytics_version` passa a `1.2.0` — a
+> forma da saída mudou, e o determinismo é garantido *por versão da lógica*.
 
 > ✅ **C2 `v1.1.0` e pontualidade `v1.1.0` ratificados pelo Sprint Lead em 2026-07-25**
 > e vigentes em `docs/ecosystem/contracts.md` e `docs/product/metrics-definitions.md`.
@@ -53,8 +64,8 @@ linhagem C1 (`c1_contract_version`, `source_year_month`, `source_lineage[]`); e 
 (`analytics_version`, `computed_at_utc`).
 
 ## Determinismo
-Mesmo input C1 → C2 idêntico em **todos** os campos exceto `computed_at_utc` (metadado de
-auditoria). Ordenação estável dos registros por (`route_id`, `airline_icao`, `reference_month`);
+Mesmo input C1 + mesmo `analytics_version` → C2 idêntico em **todos** os campos exceto
+`computed_at_utc` (metadado de auditoria). Ordenação estável dos registros por (`route_id`, `airline_icao`, `reference_month`);
 `source_lineage` ordenado; sem floats dependentes de ordem.
 
 ## Como executar

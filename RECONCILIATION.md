@@ -5,6 +5,10 @@
 > CGH↔SDU, abril–junho/2023.
 > Output: `C2 v1.1.0` → `output/c2_punctuality.json`, **25 registros**.
 > Comando: `python src/analyze.py --input input/c1_flights.csv --computed-at 2026-07-24T00:00:00Z`
+>
+> ⚠️ Esta evidência foi produzida contra o **C2 `v1.1.0`**. A promoção a `v1.2.0` (envelope,
+> ADR-0002, 2026-08-31) **não alterou nenhum número aqui** — a reconferência está na §7, que
+> não substitui nada abaixo: as §§1–6 continuam válidas como escritas.
 
 ## 1. Linhagem do input (fixa o dado exato reconciliado)
 
@@ -135,3 +139,30 @@ de classificação, incluindo os dois adicionados em `v1.1.0`:
 
 Resultado: TAM `SBSP-SBRJ` 4/3 → 0.75 (8 linhas) · GLO `SBRJ-SBSP` 2/1 → 0.5 (2 linhas) ·
 ACN `SBRJ-SBSP` 0/0 → `null` (1 linha). Total 11 = 8+2+1 ✅
+
+## 7. Reconferência após a promoção a `C2 v1.2.0` (envelope · ADR-0002 · 2026-08-31)
+
+O `v1.2.0` é aditivo **no nível do documento**: o artefato passa a carregar
+`{contract, contract_version, records[]}`. Nenhuma regra de cálculo foi tocada. Esta seção
+prova isso em vez de afirmar.
+
+Comando reexecutado:
+
+```bash
+python src/analyze.py --input input/c1_flights.csv --output output/c2_punctuality.json \
+    --computed-at 2026-08-31T00:00:00Z
+# Read 9527 C1 rows -> wrote 25 C2 records (C2 v1.2.0) to output/c2_punctuality.json
+```
+
+| Verificação | Resultado |
+|---|---|
+| Registros produzidos | 25 (igual) |
+| Comparação campo a campo com o artefato `v1.1.0` de 2026-07-25 | **0 diferenças** em todas as dimensões e nas 8 medidas |
+| Campos que mudaram, e só eles | `analytics_version` (`1.1.0` → `1.2.0`) e `computed_at_utc` (não determinístico por contrato) |
+| Determinismo (AC5) | duas execuções com o mesmo `--computed-at` → `sha256` idêntico: `8d912cdbd5a1420a76f69ee225185f93f213166e0dfbddabc6ff13b5c1eb0129` |
+| Consumo pela API | `pass (25 valid, 0 quarantined, 0 error, 0 warning)`, `C2=v1.2.0` — antes era `pass_with_warnings` com 2 avisos e `C2=None` |
+
+**Por que `analytics_version` subiu.** O determinismo do C2 é garantido *por versão da lógica*:
+*mesmo input C1 + mesmo `analytics_version` → mesmo C2 exceto `computed_at_utc`*. Manter `1.1.0`
+faria a mesma versão produzir dois documentos diferentes (array puro e envelope) — a garantia
+viraria mentira. O bump é o que a mantém verdadeira.

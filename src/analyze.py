@@ -3,11 +3,15 @@
 Analytics C2 producer — pontualidade (on-time performance).
 
 Consumes a C1 raw flight dataset (C1 v1.0.0) and produces the C2 punctuality
-indicator (C2 v1.1.0), grouped by (directional route x airline x reference month).
+document (C2 v1.2.0), grouped by (directional route x airline x reference month).
+
+C2 v1.2.0 keeps the v1.1.0 record schema unchanged and adds the document envelope
+{contract, contract_version, records[]}, so the artifact declares which contract and
+which version it carries (ADR-0002 / GOV-003).
 
 Source of truth for the numbers this script encodes:
-  - docs/ecosystem/contracts.md            -> C1 v1.0.0 (input) / C2 v1.0.0 (output)
-  - docs/product/metrics-definitions.md    -> pontualidade v1.0.0
+  - docs/ecosystem/contracts.md            -> C1 v1.0.0 (input) / C2 v1.2.0 (output)
+  - docs/product/metrics-definitions.md    -> pontualidade v1.1.0
 
 Scope (Sprint 1, Walking Skeleton): one metric (pontualidade), flat files only.
 Stdlib only: csv, json, hashlib (reserved), datetime, argparse.
@@ -21,8 +25,10 @@ from datetime import datetime, timedelta, timezone
 
 # --- Frozen constants encoded from the contracts (single source of truth) ----
 
-ANALYTICS_VERSION = "1.1.0"            # semver of this Analytics logic (determinism)
+ANALYTICS_VERSION = "1.2.0"            # semver of this Analytics logic (determinism)
 C1_CONTRACT_VERSION = "v1.0.0"
+C2_CONTRACT_NAME = "C2"                # declared by the document envelope (C2 v1.2.0)
+C2_CONTRACT_VERSION = "v1.2.0"
 METRIC_ID = "pontualidade"
 METRIC_VERSION = "v1.1.0"
 METRIC_DEFINITION_SOURCE = "docs/product/metrics-definitions.md#pontualidade"
@@ -268,6 +274,20 @@ def build_records(groups, computed_at_utc):
     return records
 
 
+def build_document(records):
+    """Wrap the records in the C2 v1.2.0 envelope.
+
+    The envelope makes the artifact self-describing: the consumer reads which contract
+    and which version it holds from the document itself, instead of assuming it. Key
+    order is fixed so the output stays byte-stable across runs (AC5).
+    """
+    return {
+        "contract": C2_CONTRACT_NAME,
+        "contract_version": C2_CONTRACT_VERSION,
+        "records": records,
+    }
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Produce C2 punctuality from a C1 CSV.")
     parser.add_argument("--input", default="input/c1_flights.csv",
@@ -289,12 +309,14 @@ def main(argv=None):
     groups = analyze(rows)
     records = build_records(groups, computed_at_utc)
 
+    document = build_document(records)
+
     with open(args.output, "w", encoding="utf-8", newline="\n") as fh:
-        json.dump(records, fh, ensure_ascii=False, indent=2)
+        json.dump(document, fh, ensure_ascii=False, indent=2)
         fh.write("\n")
 
-    print("Read %d C1 rows -> wrote %d C2 records to %s" %
-          (len(rows), len(records), args.output))
+    print("Read %d C1 rows -> wrote %d C2 records (%s %s) to %s" %
+          (len(rows), len(records), C2_CONTRACT_NAME, C2_CONTRACT_VERSION, args.output))
     return 0
 
 
