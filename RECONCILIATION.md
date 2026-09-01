@@ -9,6 +9,14 @@
 > ⚠️ Esta evidência foi produzida contra o **C2 `v1.1.0`**. A promoção a `v1.2.0` (envelope,
 > ADR-0002, 2026-08-31) **não alterou nenhum número aqui** — a reconferência está na §7, que
 > não substitui nada abaixo: as §§1–6 continuam válidas como escritas.
+>
+> **Errata — 2026-08-31 (GOV-004).** A linha de comando acima registra
+> `--computed-at 2026-07-24T00:00:00Z`, mas o artefato que sustenta as §§1–6 carregava
+> `computed_at_utc = 2026-07-25T00:00:00Z`. É divergência **de registro**, não de resultado:
+> `computed_at_utc` é o único campo fora da igualdade determinística (contrato C2 → *Garantias*,
+> AC5) e não entra em nenhum cálculo. A data **não foi corrigida** porque não é determinável qual
+> das duas execuções escreveu o artefato — inventar a “certa” seria pior que registrar a
+> divergência. Nenhuma contagem, taxa ou digest desta evidência é afetado.
 
 ## 1. Linhagem do input (fixa o dado exato reconciliado)
 

@@ -14,7 +14,7 @@ Source of truth for the numbers this script encodes:
   - docs/product/metrics-definitions.md    -> pontualidade v1.1.0
 
 Scope (Sprint 1, Walking Skeleton): one metric (pontualidade), flat files only.
-Stdlib only: csv, json, hashlib (reserved), datetime, argparse.
+Stdlib only: csv, json, datetime, argparse.
 """
 
 import argparse

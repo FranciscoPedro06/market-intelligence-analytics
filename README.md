@@ -10,7 +10,7 @@ apenas serve o número pronto (princípio RT5: a API não calcula nada).
 
 ## Escopo (Sprint 1 — Walking Skeleton)
 Uma métrica (**pontualidade**), arquivos planos. Sem banco, framework ou orquestrador
-(deferido, RT6). Python 3, **somente stdlib** (`csv`, `json`, `hashlib`, `datetime`, `argparse`).
+(deferido, RT6). Python 3, **somente stdlib** (`csv`, `json`, `datetime`, `argparse`).
 
 ## Contratos (fonte da verdade: repo de governança do ecossistema)
 - **Entrada — C1 `v1.0.0`**: registro bruto de voo (CSV). Colunas de origem VRA + colunas

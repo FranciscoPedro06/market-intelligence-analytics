@@ -34,6 +34,17 @@ Isso colide com a garantia “**Nulos nunca inventados**” (contracts.md) e com
 Efeito observado: **ACN publicava `on_time_rate = 0.0000`** (“0% pontual”) em todos os seus
 6 grupos, com 21 de seus 22 voos indefinidos; AZU `SBSP-SBRJ` subestimada em até **2,09 pp**.
 
+> **Errata — 2026-08-31 (GOV-004).** A contagem “21 de seus **22** voos” está **errada no
+> original**: a ACN tem **21 voos** nesta rota/amostra, e **os 21** são indefinidos. Verificado
+> contra o C2 real: 6 grupos ACN, `flights_source_total` = 21, `flights_operated_missing_schedule`
+> = 21, denominador 0 — conferindo com `EVIDENCE.md` do Collector (5 + 8 + 8 = 21 `REALIZADO`,
+> 0 `CANCELADO`).
+>
+> Registrado como **errata, não reescrita**: o número errado é preservado acima porque este
+> documento é o registro histórico do pedido de emenda tal como submetido ao Sprint Lead. **A
+> conclusão da CCR não depende dele** — com 21 ou 22 voos, o argumento é o mesmo: voos com
+> pontualidade indefinida estavam sendo contados como atrasados.
+
 ## 2. Emenda aplicada
 
 Simétrica ao tratamento **já existente** para o caso espelho (`flights_operated_missing_arrival`).
